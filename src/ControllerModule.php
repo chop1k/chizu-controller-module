@@ -6,6 +6,7 @@ use Chizu\Controller\Exception\ContextException;
 use Chizu\Event\Event;
 use Chizu\Module\Module;
 use Ds\Map;
+use Exception;
 
 class ControllerModule extends Module
 {
@@ -17,23 +18,19 @@ class ControllerModule extends Module
     {
         parent::__construct();
 
-        $this->dispatcher->set(self::InitiationEvent, new Event([function () {
-            $this->onInitiation();
-        }]));
+        $this->events->set(self::InitiationEvent, Event::createByMethod($this, 'onInitiation'));
     }
 
     protected function onInitiation(): void
     {
-        $this->dispatcher->set(self::ControllerEvent, new Event([function (Map $context) {
-            return $this->onController($context);
-        }], true));
+        $this->events->set(self::ControllerEvent, Event::createByMethod($this, 'onController'));
     }
 
-    protected function onController(Map $context): Map
+    protected function onController(Map $context): void
     {
-        if ($this->dispatcher->has(self::BeforeControllerEvent))
+        if ($this->events->has(self::BeforeControllerEvent))
         {
-            $this->dispatcher->dispatch(self::BeforeControllerEvent, $context);
+            $this->events->get(self::BeforeControllerEvent)->execute($context);
         }
 
         if (!$context->hasKey('controller'))
@@ -41,22 +38,24 @@ class ControllerModule extends Module
             throw new ContextException('Context does`nt contain required parameter "controller"');
         }
 
+        if (!$context->hasKey('method'))
+        {
+            throw new ContextException('Context does`nt contain required parameter "method"');
+        }
+
         $class = $context->get('controller');
 
-        $controller = new $class($context);
+        try {
+            $controller = new $class($context);
 
-        if (!$context->hasKey('action'))
-        {
-            throw new ContextException('Context does`nt contain required parameter "action"');
+            $context->put('response', $controller->{$context->get('method')}());
+        } catch (Exception $exception) {
+            $context->put('response', $exception);
         }
 
-        $context->put('response', $controller->{$context->get('action')}());
-
-        if ($this->dispatcher->has(self::AfterControllerEvent))
+        if ($this->events->has(self::AfterControllerEvent))
         {
-            $this->dispatcher->dispatch(self::AfterControllerEvent, $context);
+            $this->events->get(self::AfterControllerEvent)->execute($context);
         }
-
-        return $context;
     }
 }

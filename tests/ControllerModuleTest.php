@@ -3,26 +3,58 @@
 namespace Tests;
 
 use Chizu\Controller\ControllerModule;
+use Chizu\Http\Response\Response;
 use Ds\Map;
+use Exception;
 use PHPUnit\Framework\TestCase;
 
 class ControllerModuleTest extends TestCase
 {
-    public function testControllerEvent(): void
+    protected ControllerModule $module;
+
+    protected function setUp(): void
     {
-        $module = new ControllerModule();
+        $this->module = new ControllerModule();
 
-        $dispatcher = $module->getDispatcher();
+        $this->module->getEvents()->get(ControllerModule::InitiationEvent)->execute();
+    }
 
-        $dispatcher->dispatch(ControllerModule::InitiationEvent);
+    public function getTests(): array
+    {
+        return [
+            ['test', false],
+            ['testException', true]
+        ];
+    }
 
-        $map = new Map();
 
-        $map->put('controller', TestController::class);
-        $map->put('action', 'handle');
+    /**
+     * @dataProvider getTests
+     *
+     * @param string $method
+     * @param bool $exception
+     */
+    public function testController(string $method, bool $exception): void
+    {
+        $context = new Map();
 
-        $result = $dispatcher->dispatch(ControllerModule::ControllerEvent, $map);
+        $context->put('controller', TestHttpController::class);
+        $context->put('method', $method);
 
-        self::assertTrue($result->hasKey('response'));
+        $this->module->getEvents()->get(ControllerModule::ControllerEvent)->execute($context);
+
+        if (!$context->hasKey('response'))
+        {
+            self::fail('Context does`nt contain response');
+        }
+
+        if ($exception)
+        {
+            self::assertTrue($context->get('response') instanceof Exception);
+        }
+        else
+        {
+            self::assertTrue($context->get('response') instanceof Response);
+        }
     }
 }
