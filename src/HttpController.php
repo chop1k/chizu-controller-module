@@ -6,8 +6,27 @@ use Chizu\Http\Response\Response;
 use InvalidArgumentException;
 use JsonException;
 
+/**
+ * Class HttpController represents shortcut class for returning responses.
+ *
+ * @package Chizu\Controller
+ */
 class HttpController
 {
+    /**
+     * Returns http response with given parameters.
+     *
+     * @param string $data
+     * Response body.
+     *
+     * @param int $status
+     * Response status.
+     *
+     * @param array $headers
+     * Response headers.
+     *
+     * @return Response
+     */
     protected function response(string $data, int $status, array $headers = []): Response
     {
         $response = new Response();
@@ -20,6 +39,23 @@ class HttpController
         return $response;
     }
 
+    /**
+     * Returns response with file.
+     *
+     * @param string $path
+     * Path to file
+     *
+     * @param int $length
+     * File length.
+     *
+     * @param int $status
+     * Response status.
+     *
+     * @param array $headers
+     * Response headers. If no content-type is set, it will set type returned by mime_content_type.
+     *
+     * @return Response
+     */
     protected function file(string $path, int $length = -1, int $status = 200, array $headers = []): Response
     {
         if ($length >= 0)
@@ -44,6 +80,22 @@ class HttpController
         return $this->response($file, $status, $headers);
     }
 
+    /**
+     * Returns json response.
+     *
+     * @param $data
+     * Response data which will be encoded to json.
+     *
+     * @param int $status
+     * Response status.
+     *
+     * @param array $headers
+     * Response headers. By default sets content-type to application/json.
+     *
+     * @return Response
+     *
+     * @throws JsonException
+     */
     protected function json($data, int $status, array $headers = []): Response
     {
         $json = json_encode($data);

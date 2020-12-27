@@ -3,6 +3,8 @@
 namespace Tests;
 
 use Chizu\Controller\ControllerModule;
+use Chizu\DI\Container;
+use Chizu\Event\Events;
 use Chizu\Http\Response\Response;
 use Ds\Map;
 use Exception;
@@ -14,7 +16,7 @@ class ControllerModuleTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->module = new ControllerModule();
+        $this->module = new ControllerModule(new Events(), new Container(), new Map());
 
         $this->module->getEvents()->get(ControllerModule::InitiationEvent)->execute();
     }
@@ -50,11 +52,11 @@ class ControllerModuleTest extends TestCase
 
         if ($exception)
         {
-            self::assertTrue($context->get('response') instanceof Exception);
+            self::assertInstanceOf(Exception::class, $context->get('response'));
         }
         else
         {
-            self::assertTrue($context->get('response') instanceof Response);
+            self::assertInstanceOf(Response::class, $context->get('response'));
         }
     }
 }
