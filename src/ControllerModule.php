@@ -83,12 +83,17 @@ class ControllerModule extends Module
             throw new ContextException('Context does`nt contain required parameter "method"');
         }
 
-        try {
-            $controller = $this->container->create(new Dependency($context->get('controller'), [
-                'context' => $context
-            ]));
+        $dependency = $context->get('controller');
 
-            $context->put('response', $controller->{$context->get('method')}());
+        if (!($dependency instanceof Dependency))
+        {
+            $dependency = new Dependency($dependency);
+        }
+
+        $dependency->addArgument('context', $context);
+
+        try {
+            $context->put('response', $this->container->executeDependencyMethod($dependency, $context->get('method')));
         } catch (Exception $exception) {
             $context->put('response', $exception);
         }

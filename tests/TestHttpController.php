@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Chizu\Controller\HttpController;
+use Chizu\DI\Container;
 use Chizu\Http\Response\Response;
 use Ds\Map;
 use Exception;
@@ -11,7 +12,7 @@ class TestHttpController extends HttpController
 {
     protected Map $context;
 
-    public function __construct(Map $context)
+    public function __construct(Map $context, Container $container)
     {
         $this->context = $context;
     }
@@ -31,9 +32,14 @@ class TestHttpController extends HttpController
         return $this->json($data, $status, $headers);
     }
 
+    public function testDependency(Container $container): Response
+    {
+        return $this->response('test', 200);
+    }
+
     public function test(): Response
     {
-        return $this->response('ok', 200);
+        return $this->response('test', 200);
     }
 
     public function testException(): Response

@@ -4,6 +4,7 @@ namespace Tests;
 
 use Chizu\Controller\ControllerModule;
 use Chizu\DI\Container;
+use Chizu\DI\Dependency;
 use Chizu\Event\Events;
 use Chizu\Http\Response\Response;
 use Ds\Map;
@@ -18,14 +19,18 @@ class ControllerModuleTest extends TestCase
     {
         $this->module = new ControllerModule(new Events(), new Container(), new Map());
 
+        $container = $this->module->getContainer();
+
+        $container->add(Container::class, new Dependency($container));
+
         $this->module->getEvents()->get(ControllerModule::InitiationEvent)->execute();
     }
 
     public function getTests(): array
     {
         return [
-            ['test', false],
-            ['testException', true]
+            ['test', false, 'test'],
+            ['testException', true, '']
         ];
     }
 
@@ -35,8 +40,9 @@ class ControllerModuleTest extends TestCase
      *
      * @param string $method
      * @param bool $exception
+     * @param string $expected
      */
-    public function testController(string $method, bool $exception): void
+    public function testController(string $method, bool $exception, string $expected): void
     {
         $context = new Map();
 
@@ -56,7 +62,10 @@ class ControllerModuleTest extends TestCase
         }
         else
         {
-            self::assertInstanceOf(Response::class, $context->get('response'));
+            $response = $context->get('response');
+
+            self::assertInstanceOf(Response::class, $response);
+            self::assertEquals($expected, $response->getBody());
         }
     }
 }
