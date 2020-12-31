@@ -19,27 +19,27 @@ class TestHttpController extends HttpController
 
     public function testResponse(string $data, int $status, array $headers): Response
     {
-        return $this->response($data, $status, $headers);
+        return static::response($data, $status, $headers);
     }
 
     public function testFile(string $path, int $length, int $status, array $headers): Response
     {
-        return $this->file($path, $length, $status, $headers);
+        return static::file($path, $length, $status, $headers);
     }
 
     public function testJson($data, int $status, array $headers): Response
     {
-        return $this->json($data, $status, $headers);
+        return static::json($data, $status, $headers);
     }
 
     public function testDependency(Container $container): Response
     {
-        return $this->response('test', 200);
+        return static::response('test', 200);
     }
 
     public function test(): Response
     {
-        return $this->response('test', 200);
+        return static::response('test', 200);
     }
 
     public function testException(): Response

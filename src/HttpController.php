@@ -27,7 +27,7 @@ class HttpController
      *
      * @return Response
      */
-    protected function response(string $data, int $status, array $headers = []): Response
+    public static function response(string $data, int $status, array $headers = []): Response
     {
         $response = new Response();
 
@@ -56,7 +56,7 @@ class HttpController
      *
      * @return Response
      */
-    protected function file(string $path, int $length = -1, int $status = 200, array $headers = []): Response
+    public static function file(string $path, int $length = -1, int $status = 200, array $headers = []): Response
     {
         if ($length >= 0)
         {
@@ -77,7 +77,7 @@ class HttpController
             $headers['content-type'] = mime_content_type($path);
         }
 
-        return $this->response($file, $status, $headers);
+        return static::response($file, $status, $headers);
     }
 
     /**
@@ -96,7 +96,7 @@ class HttpController
      *
      * @throws JsonException
      */
-    protected function json($data, int $status, array $headers = []): Response
+    public static function json($data, int $status, array $headers = []): Response
     {
         $json = json_encode($data);
 
@@ -107,6 +107,6 @@ class HttpController
 
         $headers['content-type'] = 'application/json';
 
-        return $this->response($json, $status, $headers);
+        return static::response($json, $status, $headers);
     }
 }

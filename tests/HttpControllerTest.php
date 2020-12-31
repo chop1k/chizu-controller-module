@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Chizu\DI\Container;
 use Ds\Map;
 use PHPUnit\Framework\TestCase;
 
@@ -11,7 +12,7 @@ class HttpControllerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->controller = new TestHttpController(new Map());
+        $this->controller = new TestHttpController(new Map(), new Container());
     }
 
     public function getResponses(): array
